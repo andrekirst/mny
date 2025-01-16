@@ -11,7 +11,6 @@ public class TypeResolver(IServiceProvider serviceProvider) : ITypeResolver, IDi
         return type == null ? null : _serviceProvider.GetService(type);
     }
 
-
     public void Dispose()
     {
         if (_serviceProvider is IDisposable disposable)

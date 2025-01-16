@@ -2,7 +2,6 @@
 using ConsoleApp.Commands.App;
 using ConsoleApp.Database;
 using ConsoleApp.Infrastructure;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console.Cli;
 
@@ -13,10 +12,8 @@ internal class Program
     private static async Task<int> Main(string[] args)
     {
         var services = new ServiceCollection();
-        services.AddDbContext<MoneyDbContext>(options =>
-        {
-            options.UseSqlite(MoneyDbContext.ConnectionString);
-        });
+        services.AddSingleton<AccountRepository>();
+        services.AddDataAccess();
 
         var registrar = new TypeRegistrar(services);
         
@@ -24,17 +21,26 @@ internal class Program
         commandApp.Configure(config =>
         {
             config.SetApplicationName("mny");
-            
-            config.AddBranch("account", account =>
+            config.PropagateExceptions();
+
+            config.AddBranch("list", list =>
             {
-                account.AddCommand<AddAccountCommand>("add");
-                account.AddCommand<ListAccountsCommand>("list");
-                account.AddCommand<SelectActiveAccountCommand>("select");
+                list.AddCommand<ListAccountsCommand>("accounts");
+            });
+            
+            config.AddBranch("add", add =>
+            {
+                add.AddCommand<AddAccountCommand>("account");
             });
 
-            config.AddBranch("app", app =>
+            config.AddBranch("select", select =>
             {
-                app.AddCommand<UpgradeAppCommand>("upgrade");
+                select.AddCommand<SelectAccountCommand>("account");
+            });
+
+            config.AddBranch("upgrade", upgrade =>
+            {
+                upgrade.AddCommand<UpgradeAppCommand>("app");
             });
         });
 

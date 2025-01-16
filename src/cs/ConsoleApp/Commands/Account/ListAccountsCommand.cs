@@ -4,20 +4,13 @@ using Spectre.Console.Cli;
 
 namespace ConsoleApp.Commands.Account;
 
-public sealed class ListAccountsCommand(MoneyDbContext dbContext) : Command<ListAccountsCommand.ListAccountsSettings>
+public sealed class ListAccountsCommand(AccountRepository accountRepository) : Command<ListAccountsCommand.ListAccountsSettings>
 {
     public sealed class ListAccountsSettings : CommandSettings;
 
     public override int Execute(CommandContext context, ListAccountsSettings settings)
     {
-        var accounts = dbContext.Accounts
-            .Select(a => new
-            {
-                Id = a.Id.ToString(),
-                a.Name,
-                a.IsSelected
-            })
-            .ToList();
+        var accounts = accountRepository.ListAccounts();
 
         var table = new Table
         {
@@ -35,7 +28,7 @@ public sealed class ListAccountsCommand(MoneyDbContext dbContext) : Command<List
             }
             else
             {
-                table.AddRow(account.Id, account.Name);
+                table.AddRow(account.Id.ToString(), account.Name);
             }
         }
         
